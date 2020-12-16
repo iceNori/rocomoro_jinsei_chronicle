@@ -22,6 +22,7 @@ function resist(max_id){
   users.set("game_money",0);
   users.set("game_count",0);
   users.set("mobile",mobile);
+  users.set("delete_flag",1);
   users.set("max_money",0);
   users.set("min_money",null);
   users.save()
@@ -33,14 +34,16 @@ function resist(max_id){
         // エラー処理
     });
 }
-function change(){
+function change(text){
 
   var Datastore = ncmb.DataStore("users");
-  Datastore.equalTo("user_id",2).fetchAll().then(function(results){
-             results[0].set("user_name",sessionStorage.getItem("change_name"));
+  var user_id = Number(localStorage.getItem("user_id"));
+  Datastore.equalTo("user_id",user_id).fetchAll().then(function(results){
+             
+             results[0].set("user_name",text);
              return results[0].update();
           })
-    .then(function(gameScore){
+    .then(function(){
     // 保存後の処理
     alert("変更成功");
     })
@@ -50,19 +53,21 @@ function change(){
     });
 }
 
-function userDelete(){
+async function userDelete(){
   var Datastore = ncmb.DataStore("users");
-  var datastore = Datastore.equalTo("user_id",1)
-           .fetchAll()
-           .then(function(datastore){
-             datastore.set("user_name",document.getElementById(user_name).value);
+  var user_id = Number(localStorage.getItem("user_id"));
+  await Datastore.equalTo("user_id",user_id).fetch().then(function(datastore){
+             datastore.set("delete_flag",2);
              return datastore.update();
           })
-    .then(function(gameScore){
+    .then(function(){
     // 保存後の処理
+    alert("削除成功");
+    location.href="title.html";
     })
     .catch(function(err){
         // エラー処理
+    alert("削除失敗");
     });
 }
 function MaxId(){
@@ -136,16 +141,38 @@ function login(){
   
   var mobile = localStorage.getItem('mobile');
 
-  Users.equalTo("mobile",mobile).fetchAll().then(function(results){
+  Users.equalTo("mobile",mobile).equalTo("delete_flag",1).fetchAll().then(function(results){
     var object = results[0];
     if(object != null){
       var user_id = object.get("user_id");
+      console.log(user_id);
       localStorage.setItem('user_id',user_id);
       alert("ログイン成功");
       location.href="Menu.html";
     }else{
       alert("ログイン失敗");
     }});
+}
+
+async function playdate(){
+  var Users = ncmb.DataStore("users");
+  
+  var user_id = Number(localStorage.getItem('user_id'));
+  var arr = [];
+
+  await Users.equalTo("user_id",user_id).fetch().then(function(results){
+    var object = results;
+    arr.push(object.get("user_name"));
+    arr.push(object.get("all_money"));
+    arr.push(object.get("max_money"));
+    var min = object.get("min_money");
+    if(min == null){
+      min = "記録なし";
+    }
+    arr.push(min);
+    arr.push(object.get("count"));
+  });
+  return arr;
 }
 
 sanitaize = {

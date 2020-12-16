@@ -46,20 +46,19 @@ function Create(room_name,count,password,comment,max_id){
    
 }
 
-function Delete(){
+async function Delete(){
   var Room = ncmb.DataStore("room");
 
   var room_id = Number(localStorage.getItem("room_id"));
 
-  Room.equalTo("room_id",room_id).fetchAll().then(function(results){
+  await Room.equalTo("room_id",room_id).fetchAll().then(function(results){
     var object = results[0];
-    alert(object.get("room_id"));
     object.set("delete_flag",1);
     return object.update();
   })
   .catch(function(err){
       // エラー処理
-      alert(err);
+      console.log("削除失敗");
   });
 }
 
@@ -99,7 +98,7 @@ async function RoomOut(){
   
   })
   if(admin_flg == 1){
-      Delete();
+      await Delete();
   }
 
   location.href='testRoomCreate].html';
@@ -327,7 +326,7 @@ function TimeCheck(){
   room.equalTo("room_id",room_id).fetch().then(function(results){
     var object = results;
     if(object.get("end_time") != null){
-      location.href="../game.html"
+      location.href="../game.html";
     }
   });
 }
